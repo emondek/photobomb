@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+  },
+  "variables": {
+    "apiVersion": "2015-06-15"
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "name": "nestedTemplate", 
+      "type": "Microsoft.Resources/deployments", 
+      "properties": { 
+        "mode": "incremental", 
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/emondek/photobomb/master/vnet.json",
+          "contentVersion": "1.0.0.0"
+        }, 
+        "parametersLink": { 
+          "uri":"https://raw.githubusercontent.com/emondek/photobomb/master/azuredeploy.parameters.json",
+          "contentVersion":"1.0.0.0"
+        }
+      } 
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "name": "nestedTemplate", 
+      "type": "Microsoft.Resources/deployments", 
+      "properties": { 
+        "mode": "incremental", 
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/emondek/photobomb/master/storage.json",
+          "contentVersion": "1.0.0.0"
+        }, 
+        "parametersLink": { 
+          "uri":"https://raw.githubusercontent.com/emondek/photobomb/master/azuredeploy.parameters.json",
+          "contentVersion":"1.0.0.0"
+        }
+      } 
+    }
+  ]
+}
