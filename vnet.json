@@ -1,0 +1,126 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Deployment location"
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "pbdevwuvnet1",
+      "metadata": {
+        "description": "VNet name"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "172.17.38.0/23",
+      "metadata": {
+        "description": "Address prefix"
+      }
+    },
+    "webSubnetName": {
+      "type": "string",
+      "defaultValue": "WEB",
+      "metadata": {
+        "description": "Web subnet name"
+      }
+    },
+    "webSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "172.17.38.0.26",
+      "metadata": {
+        "description": "Web subnet prefix"
+      }
+    },
+    "appSubnetName": {
+      "type": "string",
+      "defaultValue": "APP",
+      "metadata": {
+        "description": "Application subnet name"
+      }
+    },
+    "appSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "172.17.38.64/26",
+      "metadata": {
+        "description": "Application subnet prefix"
+      }
+    },
+    "dbSubnetName": {
+      "type": "string",
+      "defaultValue": "DB",
+      "metadata": {
+        "description": "Database subnet name"
+      }
+    },
+    "dbSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "172.17.38.128/27",
+      "metadata": {
+        "description": "Database subnet prefix"
+      }
+    },
+    "infSubnetName": {
+      "type": "string",
+      "defaultValue": "INF",
+      "metadata": {
+        "description": "Infrastructure subnet name"
+      }
+    },
+    "infSubnetPrefix": {
+      "type": "string",
+      "defaultValue": "172.17.38.160/28",
+      "metadata": {
+        "description": "Infrastructure subnet prefix"
+      }
+    }
+  },
+  "variables": {
+    "apiVersion": "2015-06-15"
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('vnetName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('webSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('webSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "[parameters('appSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('appSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "[parameters('dbSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('dbSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "[parameters('infSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('infSubnetPrefix')]"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
