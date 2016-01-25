@@ -1,0 +1,45 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "West US"
+    },
+    "vnetName": {
+      "value": "pbdevwuvnet1"
+    },
+    "vnetAddressPrefix": {
+      "value": "172.17.38.0/23"
+    },
+    "webSubnetName": {
+      "value": "WEB"
+    },
+    "webSubnetPrefix": {
+      "value": "172.17.38.0/26"
+    },
+    "appSubnetName": {
+      "value": "APP"
+    },
+    "appSubnetPrefix": {
+      "value": "172.17.38.64/26"
+    },
+    "dbSubnetName": {
+      "value": "DB"
+    },
+    "dbSubnetPrefix": {
+      "value": "172.17.38.128/27"
+    },
+    "infSubnetName": {
+      "value": "INF"
+    },
+    "infSubnetPrefix": {
+      "value": "172.17.38.160/28"
+    },
+    "storageAccountName": {
+      "value": "pbwussaapp1"
+    },
+    "storageAccountType": {
+      "value": "Standard_LRS"
+    }
+  }
+}
