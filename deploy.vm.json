@@ -1,0 +1,181 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/VM_IP.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourcePrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Prefix for resource names.  Ex. pbwu"
+            }
+        },
+        "resourceSuffix": {
+            "type": "string",
+            "metadata": {
+                "description": "Suffix for resource names.  Ex. app1"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "West US",
+            "metadata": {
+                "description": "Deployment location"
+            }
+        },
+        "vnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the virtual network where you're deploying the virtual machine."
+            }
+        },
+        "subnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the subnet where you're deploying the virtual machine."
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the storage account where your custom image VHD resides and where your VM disks will be stored"
+            }
+        },
+        "userImageStorageContainerName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the container in your storage account where the custom image VHD resides"
+            }
+        },
+        "userImageVhdName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the your custom image VHD"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_D1",
+            "metadata": {
+                "description": "Size of your Virtual Machine."
+            }
+        },
+        "osType": {
+            "type": "string",
+            "allowedValues": [
+                "windows",
+                "linux"
+            ],
+            "metadata": {
+                "description": "OS that your VM will be running"
+            }
+        },
+        "adminUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "Local user for your Virtual Machine."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for your local user."
+            }
+        }
+    },
+    "variables": {
+        "publicIPName": "[concat(parameters('resourcePrefix'), 'pip', parameters('resourceSuffix'))]",
+        "dnsNameForPublicIP": "[concat(parameters('resourcePrefix'), 'pip', parameters('resourceSuffix'))]",
+        "publicIPAddressType": "Dynamic",
+        "vmName": "[concat(parameters('resourcePrefix'), 'vm', parameters('resourceSuffix'))]",
+        "nicName": "[concat(parameters('resourcePrefix'), 'nic', parameters('resourceSuffix'))]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+        "subnetRef": "[concat(variables('vnetID'),'/subnets/', parameters('subnetName'))]",
+        "userImageUri": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/', parameters('userImageStorageContainerName'), '/', parameters('userImageVhdName'))]",
+        "osDiskVhdUri": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('vmName'), '-os-1.vhd')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('dnsNameForPublicIP')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[variables('vmName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[parameters('userImageVhdName')]",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "[variables('userImageUri')]"
+                        },
+                        "vhd": {
+                            "uri": "[variables('osDiskVhdUri')]"
+                        },
+                        "caching": "ReadWrite"
+                    }
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net/')]"
+                    }
+                },
+                "provisioningState": 0
+            }
+        }
+    ]
+}

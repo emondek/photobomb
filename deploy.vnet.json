@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "West US",
+      "metadata": {
+        "description": "Deployment location"
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "VNet 1",
+      "metadata": {
+        "description": "VNet name"
+      }
+    },
+    "ipAddressPrefix": {
+      "type": "string",
+      "defaultValue": "172.17.38",
+      "metadata": {
+        "description": "IP Address prefix"
+      }
+    }
+  },
+  "variables": {
+    "apiVersion": "2015-06-15",
+    "vnetAddressPrefix": "[concat(parameters('ipAddressPrefix'), '.0/23')]",
+    "webSubnetName": "WEB",
+    "webSubnetPrefix": "[concat(parameters('ipAddressPrefix'), '.0/26')]",
+    "appSubnetName": "APP",
+    "appSubnetPrefix": "[concat(parameters('ipAddressPrefix'), '.64/26')]",
+    "dbSubnetName": "DB",
+    "dbSubnetPrefix": "[concat(parameters('ipAddressPrefix'), '.128/27')]",
+    "infSubnetName": "INF",
+    "infSubnetPrefix": "[concat(parameters('ipAddressPrefix'), '.160/28')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('vnetName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('webSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('webSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('appSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('appSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('dbSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('dbSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "[variables('infSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('infSubnetPrefix')]"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

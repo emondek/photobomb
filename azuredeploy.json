@@ -2,41 +2,155 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "deploymentTemplateStorageAccount": {
+        "type": "string",
+        "metadata": {
+            "description": "Storage account where the ARM deployment templates are hosted"
+        }
+    },
+    "deploymentTemplateContainer": {
+        "type": "string",
+        "metadata": {
+            "description": "Container where the ARM deployment templates are hosted"
+        }
+    },
+    "resourcePrefix": {
+        "type": "string",
+        "metadata": {
+            "description": "Prefix for resource names.  Ex. pbwu"
+        }
+    },
+    "resourceSuffix": {
+        "type": "string",
+        "metadata": {
+            "description": "Suffix for resource names.  Ex. app1"
+        }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "West US",
+      "metadata": {
+        "description": "Deployment location"
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "VNet 1",
+      "metadata": {
+        "description": "VNet name"
+      }
+    },
+    "subnetName": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the subnet where you're deploying the virtual machine."
+        }
+    },
+    "ipAddressPrefix": {
+      "type": "string",
+      "defaultValue": "172.17.38",
+      "metadata": {
+        "description": "IP Address prefix"
+      }
+    },
+    "storageAccountName": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the storage account where your custom image VHD resides and where your VM disks will be stored"
+        }
+    },
+    "userImageStorageContainerName": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the container in your storage account where the custom image VHD resides"
+        }
+    },
+    "userImageVhdName": {
+        "type": "string",
+        "metadata": {
+            "description": "Name of the your custom image VHD"
+        }
+    },
+    "vmSize": {
+        "type": "string",
+        "defaultValue": "Standard_D1",
+        "metadata": {
+            "description": "Size of your Virtual Machine."
+        }
+    },
+    "osType": {
+        "type": "string",
+        "allowedValues": [
+            "windows",
+            "linux"
+        ],
+        "metadata": {
+            "description": "OS that your VM will be running"
+        }
+    },
+    "adminUserName": {
+        "type": "string",
+        "metadata": {
+            "description": "Local user for your Virtual Machine."
+        }
+    },
+    "adminPassword": {
+        "type": "securestring",
+        "metadata": {
+            "description": "Password for your local user."
+        }
+    }
   },
   "variables": {
-    "apiVersion": "2015-06-15"
+    "apiVersion": "2015-11-01",
+    "vnetTemplateLink": "[concat('https://', parameters('deploymentTemplateStorageAccount'), '.blob.core.windows.net/', parameters('deploymentTemplateContainer'), '/deploy.vnet.json')]",
+    "vmTemplateLink": "[concat('https://', parameters('deploymentTemplateStorageAccount'), '.blob.core.windows.net/', parameters('deploymentTemplateContainer'), '/deploy.vm.json')]"
   },
   "resources": [
     {
       "apiVersion": "[variables('apiVersion')]",
-      "name": "nestedTemplate", 
       "type": "Microsoft.Resources/deployments", 
+      "name": "vnetTemplate", 
       "properties": { 
         "mode": "incremental", 
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/emondek/photobomb/master/vnet.json",
+          "uri": "[variables('vnetTemplateLink')]",
           "contentVersion": "1.0.0.0"
         }, 
-        "parametersLink": { 
-          "uri":"https://raw.githubusercontent.com/emondek/photobomb/master/azuredeploy.parameters.json",
-          "contentVersion":"1.0.0.0"
-        }
+        "parameters": { 
+          "location":{"value": "[parameters('location')]"}, 
+          "vnetName":{"value": "[parameters('vnetName')]"}, 
+          "ipAddressPrefix":{"value": "[parameters('ipAddressPrefix')]"} 
+        } 
       } 
     },
     {
       "apiVersion": "[variables('apiVersion')]",
-      "name": "nestedTemplate", 
       "type": "Microsoft.Resources/deployments", 
+      "name": "vmTemplate", 
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/', 'vnetTemplate')]"
+      ],
       "properties": { 
         "mode": "incremental", 
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/emondek/photobomb/master/storage.json",
+          "uri": "[variables('vmTemplateLink')]",
           "contentVersion": "1.0.0.0"
         }, 
-        "parametersLink": { 
-          "uri":"https://raw.githubusercontent.com/emondek/photobomb/master/azuredeploy.parameters.json",
-          "contentVersion":"1.0.0.0"
-        }
+        "parameters": { 
+          "resourcePrefix":{"value": "[parameters('resourcePrefix')]"}, 
+          "resourceSuffix":{"value": "[parameters('resourceSuffix')]"}, 
+          "location":{"value": "[parameters('location')]"}, 
+          "vnetName":{"value": "[parameters('vnetName')]"}, 
+          "subnetName":{"value": "[parameters('subnetName')]"}, 
+          "storageAccountName":{"value": "[parameters('storageAccountName')]"}, 
+          "userImageStorageContainerName":{"value": "[parameters('userImageStorageContainerName')]"}, 
+          "userImageVhdName":{"value": "[parameters('userImageVhdName')]"}, 
+          "vmSize":{"value": "[parameters('vmSize')]"}, 
+          "osType":{"value": "[parameters('osType')]"}, 
+          "adminUserName":{"value": "[parameters('adminUserName')]"}, 
+          "adminPassword":{"value": "[parameters('adminPassword')]"} 
+        } 
       } 
     }
   ]

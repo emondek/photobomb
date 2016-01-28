@@ -1,0 +1,21 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "West US"
+    },
+    "appStorageAccountName": {
+      "value": "pbwussaapp1"
+    },
+    "appStorageAccountType": {
+      "value": "Standard_LRS"
+    },
+    "dbStorageAccountName": {
+      "value": "pbwussadb1"
+    },
+    "dbStorageAccountType": {
+      "value": "Standard_LRS"
+    }
+  }
+}
